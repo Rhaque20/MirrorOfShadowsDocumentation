@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Save System.md",
+                "file": "SaveSystem/Save System Overview.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Save System"
+              "title": "Save System Overview"
             }
           }
         ]
@@ -196,8 +196,11 @@
   },
   "active": "c33b47b2d143d773",
   "lastOpenFiles": [
+    "SaveSystem/ISavableInterface.md",
     "Combat Events.md",
-    "Save System.md",
+    "SaveSystem/Save System Overview.md",
+    "SaveSystem/Save Struct Definitions.md",
+    "SaveSystem",
     "Untitled.canvas",
     "Untitled.base",
     "2025-12-03.md"
