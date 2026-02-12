@@ -37,49 +37,40 @@ void UMyGameInstance::Init()
 {  
      Super::Init();  
     SaveSystem->LoadGameFromSlots("SAVEFILE");  
-    FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this,&UMyGameInstance::HandleWorldReady);  
 }
 ```
 
 ```cpp
-void UMyGameInstance::HandleWorldReady(UWorld* LoadedWorld)  
+void USaveSystem::LoadGameFromSlots(FString SaveName)  
 {  
-    if (SaveSystem->LoadedSave)  
-    {        
-	    SaveSystem->LoadGame();  
-    }
+  
+    USaveGame* LoadedGame = UGameplayStatics::LoadGameFromSlot(TEXT("SAVEDMAN"), 0);  
+    if (LoadedGame)  
+    {        LoadedFile = Cast<USavedGame>(LoadedGame);  
+        if (LoadedFile)  
+        {            LoadedSave = true;  
+        }        else  
+        {  
+            LoadedSave = false;  
+        }    }  
 }
 ```
 
 ## Step 2: Read the save file and load the necessary data into their respective objects
 
 ```cpp
-void USaveSystem::LoadGame()  
+void USaveSystem::RegisterSubsystem(TScriptInterface<ISavableInterface> Subsystem)  
 {  
-    if (!LoadedFile) return;  
-  
-    // Sort subsystems same as save  
-    Subsystems.Sort([](auto A, auto B)  
-        {            return A->GetSavePhase() < B->GetSavePhase();  
-        });  
-    int32 MaxPhase = 3;  
-  
-    for (int32 Phase = 0; Phase <= MaxPhase; Phase++)  
-    {        for (auto& Sys : Subsystems)  
-            if (Sys->GetSavePhase() == Phase)  
-                Sys->PreLoad();  
-  
-        for (auto& Sys : Subsystems)  
-            if (Sys->GetSavePhase() == Phase)  
-                Sys->LoadData(*LoadedFile);  
-  
-        for (auto& Sys : Subsystems)  
-            if (Sys->GetSavePhase() == Phase)  
-                Sys->PostLoad();  
+    Subsystems.Add(Subsystem);  
+    if (LoadedSave)  
+        Subsystem->LoadData(*LoadedFile);  
+    else  
+    {  
+        Subsystem->InitializeData();  
     }}
 ```
 
-Subsystems is TArray of all actors and components that implement `ISavableInterface`. It will go through each of them and load their respective data based on the current phase.
+Subsystems is TArray of all actors and components that implement `ISavableInterface`. It will go through each of them and if a save file is loaded, load the respective data. That way the data is loaded for each actor that is ready when they are ready.
 
 Subsystems get added by each implemented actor/component with a line of code that goes like this:
 ```cpp
